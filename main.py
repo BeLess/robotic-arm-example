@@ -9,6 +9,7 @@ import pygame
 
 from gherkin.model.robot import Robot
 from gherkin.model.world import World
+from gherkin.util.controller import Controller
 
 
 class Visualizer:
@@ -80,24 +81,6 @@ class Visualizer:
 
     def cleanup(self) -> None:
         pygame.quit()
-
-
-class Controller:
-    def __init__(self, goal: Tuple[int, int]) -> None:
-        self.goal = goal
-        self.goal_theta_0, self.goal_theta_1 = Robot.inverse(self.goal[0], self.goal[1])
-
-    def step(self, robot: Robot) -> Robot:
-        """
-        Simple P controller
-        """
-        theta_0_error = self.goal_theta_0 - robot.theta_0
-        theta_1_error = self.goal_theta_1 - robot.theta_1
-
-        robot.theta_0 += theta_0_error / 10
-        robot.theta_1 += theta_1_error / 10
-
-        return robot
 
 
 class Runner:
