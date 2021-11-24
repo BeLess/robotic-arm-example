@@ -4,12 +4,16 @@ from typing import List, Tuple
 
 import numpy as np
 
+from gherkin.model import DIRECTION, SPEED
+
 
 @dataclass()
 class RobotLimits:
-    JOINT_LIMITS = [-6.28, 6.28]
+    JOINT_LIMITS: Tuple[float, float] = (-6.28, 6.28)
     MAX_VELOCITY = 15
     MAX_ACCELERATION = 50
+    FAST_ROTATION_SPEED: int = 5
+    FINE_ROTATION_SPEED: int = 1
     DT = 0.033
 
     def check_angle_limits(self, theta: float) -> bool:
@@ -26,6 +30,7 @@ class RobotLimits:
 class Robot:
     _theta_0: float = 0  # radians
     _theta_1: float = 0  # radians
+    _angle: int = 0   # degrees
     link_1: float = 75.  # pixels
     link_2: float = 50.  # pixels
     limits: RobotLimits = field(default_factory=RobotLimits)
@@ -63,6 +68,17 @@ class Robot:
             f'Joint 1 Velocity {self.limits.max_velocity(self.all_theta_1)} exceeds velocity limit'
         assert self.limits.max_acceleration(self.all_theta_1) < self.limits.MAX_ACCELERATION, \
             f'Joint 1 Accel {self.limits.max_acceleration(self.all_theta_1)} exceeds acceleration limit'
+
+    @property
+    def angle(self) -> int:
+        return self._angle
+
+    def rotate(self, direction: DIRECTION, speed: SPEED) -> None:
+        rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
+        if direction == DIRECTION.RIGHT:
+            self._angle += rotation_rate
+        else:
+            self._angle -= rotation_rate
 
     # Kinematics
     def joint_1_pos(self) -> Tuple[float, float]:
