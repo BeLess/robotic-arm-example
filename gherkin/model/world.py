@@ -1,18 +1,13 @@
+from dataclasses import dataclass
 from typing import Tuple, Union
 
 
+@dataclass()
 class World:
-    def __init__(
-        self,
-        width: int,
-        height: int,
-        robot_origin: Tuple[int, int],
-        goal: Tuple[int, int]
-    ) -> None:
-        self.width = width
-        self.height = height
-        self.robot_origin = robot_origin
-        self.goal = goal
+    width: int
+    height: int
+    robot_origin: Tuple[int, int]
+    goal: Tuple[int, int]
 
     def convert_to_display(
             self, point: Tuple[Union[int, float], Union[int, float]]) -> Tuple[int, int]:
