@@ -4,8 +4,7 @@ from typing import Tuple
 
 import numpy as np
 
-from gherkin.model.robot import Robot
-from gherkin.model.world import World
+from gherkin.model import Goal, Robot,  World
 from gherkin.util.controller import Controller
 from gherkin.visuals.visualizer import Visualizer
 
@@ -27,6 +26,8 @@ class Runner:
             # Check collisions
             # TODO
 
+
+
             # Check success
             success = self.check_success(self.robot, self.world.goal)
 
@@ -37,12 +38,13 @@ class Runner:
             time.sleep(self.robot.limits.DT)
 
     @staticmethod
-    def check_success(robot: Robot, goal: Tuple[int, int]) -> bool:
+    def check_success(robot: Robot, goal: Goal) -> bool:
         """
         Check that robot's joint 2 is very close to the goal.
         Don't not use exact comparision, to be robust to floating point calculations.
         """
-        return np.allclose(robot.joint_2_pos(), goal, atol=0.25)
+
+        return np.allclose(robot.joint_2_pos(), (goal.x, goal.y), atol=0.25)
 
     def cleanup(self) -> None:
         self.vis.cleanup()

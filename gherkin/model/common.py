@@ -1,4 +1,7 @@
 from enum import Enum
+from collections import namedtuple
+
+Goal = namedtuple("Goal", ["x", "y", "angle"])
 
 
 class DIRECTION(Enum):

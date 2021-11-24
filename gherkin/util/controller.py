@@ -1,12 +1,12 @@
 from dataclasses import dataclass, field
-from typing import Tuple
 
+from gherkin.model import Goal
 from gherkin.model.robot import Robot
 
 
 @dataclass()
 class Controller:
-    goal: Tuple[int, int]
+    goal: Goal
     goal_theta_0: float = field(init=False)
     goal_theta_1: float = field(init=False)
 
