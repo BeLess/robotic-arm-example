@@ -75,7 +75,7 @@ class Robot:
 
     def rotate(self, direction: DIRECTION, speed: SPEED) -> None:
         rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
-        if direction == DIRECTION.RIGHT:
+        if direction == DIRECTION.CLOCKWISE:
             self._angle += rotation_rate
         else:
             self._angle -= rotation_rate

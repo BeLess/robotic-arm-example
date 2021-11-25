@@ -1,6 +1,6 @@
 import numpy as np
 
-from gherkin.model import Goal
+from gherkin.model import Goal, Angle
 
 
 def generate_random_goal(min_radius: float, max_radius: float) -> Goal:
@@ -16,4 +16,4 @@ def generate_random_goal(min_radius: float, max_radius: float) -> Goal:
     y = int(r * np.sin(theta))
     angle = np.random.randint(low=0, high=180)
 
-    return Goal(x, y, angle)
+    return Goal(x, y, Angle(angle))
