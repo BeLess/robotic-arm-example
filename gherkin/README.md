@@ -7,7 +7,7 @@ At default, Gherking's dual joint arm can only reach points within a 2 dimension
 we can turn that 2d plane into a 3d sphere of influence.
 
 ### Functional Logic
-So, normally spherical coordinates are denoted by radial distance from the center, "the radial distance of that point from a fixed origin, 
+So, normally spherical coordinates are denoted by "the radial distance of that point from a fixed origin, 
 its polar angle measured from a fixed zenith direction, 
 and the azimuthal angle of its orthogonal projection on a reference plane that passes through the origin and is orthogonal to the zenith" <sup>[wikipedia](https://en.wikipedia.org/wiki/Spherical_coordinate_system) </sup>
 
