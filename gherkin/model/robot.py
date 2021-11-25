@@ -1,10 +1,10 @@
-import enum
+import logging
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
 import numpy as np
 
-from gherkin.model import DIRECTION, SPEED
+from gherkin.model import Angle, DIRECTION, SPEED
 
 
 @dataclass()
@@ -30,7 +30,7 @@ class RobotLimits:
 class Robot:
     _theta_0: float = 0  # radians
     _theta_1: float = 0  # radians
-    _angle: int = 0   # degrees
+    _angle: Angle = Angle(0)   # degrees
     link_1: float = 75.  # pixels
     link_2: float = 50.  # pixels
     limits: RobotLimits = field(default_factory=RobotLimits)
@@ -70,11 +70,12 @@ class Robot:
             f'Joint 1 Accel {self.limits.max_acceleration(self.all_theta_1)} exceeds acceleration limit'
 
     @property
-    def angle(self) -> int:
+    def angle(self) -> Angle:
         return self._angle
 
     def rotate(self, direction: DIRECTION, speed: SPEED) -> None:
         rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
+        print(f"Rotating robot {rotation_rate} degrees {direction.value}")
         if direction == DIRECTION.CLOCKWISE:
             self._angle += rotation_rate
         else:

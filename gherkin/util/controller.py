@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -20,7 +21,8 @@ class Controller:
         """
         if rotation:
             self._rotate_robot(robot, rotation)
-        self._move_arm(robot)
+        else:
+            self._move_arm(robot)
 
         return robot
 

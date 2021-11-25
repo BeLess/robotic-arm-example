@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gherkin.model import Goal, Robot, Rotation, World
+from gherkin.model import DIRECTION, Goal, Robot, Rotation, SPEED, World
 from gherkin.util.controller import Controller
 from gherkin.visuals.visualizer import Visualizer
 
@@ -17,11 +17,13 @@ class Runner:
 
     def run(self) -> None:
         running = True
+        found_angle = False
         success = False
 
         while running:
             # Step the controller
-            self.robot = self.controller.step(self.robot, None)
+            rotation = determine_rotation(self.robot, self.world.goal) if not found_angle else None
+            self.robot = self.controller.step(self.robot, rotation)
 
             # Check collisions
             # TODO
@@ -56,3 +58,40 @@ class Runner:
 
     def cleanup(self) -> None:
         self.vis.cleanup()
+
+
+def determine_rotation(robot: Robot, goal: Goal) -> Rotation:
+    direction, difference = deterimine_direction_rotation_cheap(robot, goal)
+    speed = SPEED.FAST if difference > robot.limits.FAST_ROTATION_SPEED else SPEED.FINE
+
+    return Rotation(direction, speed)
+
+
+def deterimine_direction_rotation_cheap(robot: Robot, goal: Goal):
+    """
+    Determines the optimal rotation of the arm, if rotating the entire robot is cheaper than manipulating the arm
+    """
+    difference_cw = abs(robot.angle.angle - goal.angle.angle)
+    difference_ccw = abs(robot.angle.inverse.angle - goal.angle.angle)
+    direction, difference = (DIRECTION.CLOCKWISE, difference_cw) if difference_cw < difference_ccw \
+        else (DIRECTION.COUNTER_CLOCKWISE, difference_ccw)
+    return direction, difference
+
+
+# todo: Figure out of this makes sense
+def deterimine_direction_arm_cheap(robot: Robot, goal:Goal):
+    """
+    Determines the optimal rotation of the arm, if manipulating the arm is cheaper than rotating the robot
+    """
+    difference_cw = abs(robot.angle.angle - goal.angle.angle)
+    difference_ccw = abs(robot.angle.angle - goal.angle.inverse.angle)
+    return difference_cw, difference_ccw
+
+def determine_arm_facing(robot: Robot, goal: Goal) -> bool:
+    """
+    determines whether the arm is "facing" the same direction as the target
+    """
+    if (robot.joint_2_pos()[0] > 0 and goal.x > 0) or (robot.joint_2_pos()[0] < 0 and goal.x < 0):
+        return True
+    return False
+
