@@ -14,7 +14,7 @@ class RobotLimits:
     MAX_ACCELERATION = 50
     FAST_ROTATION_SPEED: int = 5
     FINE_ROTATION_SPEED: int = 1
-    DT = 0.033
+    DT = 0.066
 
     def check_angle_limits(self, theta: float) -> bool:
         return self.JOINT_LIMITS[0] < theta < self.JOINT_LIMITS[1]
