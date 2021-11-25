@@ -1,7 +1,9 @@
 # Pickle Coding Challenge
+Gotta put something in here for the commit
+
 
 ## Introduction
-Help Gherkin.
+Help Gherkin. 
 
 Gherkin is a two-link robot arm trying to reach a randomized goal. Help Gherkin
 by adding features and improving the existing sandbox.
