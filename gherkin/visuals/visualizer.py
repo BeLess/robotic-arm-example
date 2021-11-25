@@ -31,7 +31,7 @@ class Visualizer:
         pygame.draw.circle(self.screen, self.RED, goal, 6)
 
 
-    def display_robot(self, robot: Robot, rotation: Optional[Rotation]) -> None:
+    def display_robot(self, robot: Robot) -> None:
         """
         Display the robot
         """
@@ -57,15 +57,17 @@ class Visualizer:
         text = self.font.render('Rotating:', True, self.BLACK)
         self.screen.blit(text, (1, self.world.height + 50))
         center = (130, self.world.height + 60)
-        radar_len = 25
-        x1 = center[0] + math.cos(math.radians(robot.angle.inverse.angle)) * radar_len
-        y1 = center[1] + math.sin(math.radians(robot.angle.inverse.angle)) * radar_len
-        x2 = center[0] + math.cos(math.radians(robot.angle.angle)) * radar_len
-        y2 = center[1] + math.sin(math.radians(robot.angle.angle)) * radar_len
-        pygame.draw.circle(self.screen, self.BLACK, center, 4)
+        line_length = 25
+        x1 = center[0] + math.cos(math.radians(robot.angle.inverse.angle)) * line_length
+        y1 = center[1] + math.sin(math.radians(robot.angle.inverse.angle)) * line_length
+        x2 = center[0] + math.cos(math.radians(robot.angle.angle)) * line_length
+        y2 = center[1] + math.sin(math.radians(robot.angle.angle)) * line_length
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+        pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)
         pygame.draw.line(self.screen, self.BLACK, (x1, y1), (x2, y2), 3)
 
-    def update_display(self, robot: Robot, success: bool, rotation: Optional[Rotation]) -> bool:
+    def update_display(self, robot: Robot, success: bool) -> bool:
         for event in pygame.event.get():
             # Keypress
             if event.type == pygame.KEYDOWN:
@@ -80,7 +82,7 @@ class Visualizer:
 
         self.display_world()
 
-        self.display_robot(robot, rotation)
+        self.display_robot(robot)
 
         if success:
             text = self.font.render('Success!', True, self.BLACK)

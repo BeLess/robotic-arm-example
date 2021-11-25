@@ -34,7 +34,7 @@ class Runner:
                 success = self.check_success(self.robot, self.world.goal)
 
             # Update the display
-            running = self.vis.update_display(self.robot, success, rotation)
+            running = self.vis.update_display(self.robot, success)
 
             # sleep for Robot DT seconds, to force update rate
             time.sleep(self.robot.limits.DT)
