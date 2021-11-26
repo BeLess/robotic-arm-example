@@ -9,6 +9,7 @@ from gherkin.model import World, Robot, Rotation
 class Visualizer:
     BLACK: Tuple[int, int, int] = (0, 0, 0)
     RED: Tuple[int, int, int] = (255, 0, 0)
+    GREEN: Tuple[int, int, int] = (0, 255, 0)
     WHITE: Tuple[int, int, int] = (255, 255, 255)
 
     def __init__(self, world: World) -> None:
@@ -65,7 +66,8 @@ class Visualizer:
         cx = (x1 + x2) / 2
         cy = (y1 + y2) / 2
         pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)
-        pygame.draw.line(self.screen, self.BLACK, (x1, y1), (x2, y2), 3)
+        pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 3)
+        pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 3)
 
     def update_display(self, robot: Robot, success: bool) -> bool:
         for event in pygame.event.get():
