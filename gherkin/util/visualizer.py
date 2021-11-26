@@ -1,9 +1,9 @@
-from typing import Tuple, Optional
+from typing import Tuple
 
 import pygame
 from numpy.lib import math
 
-from gherkin.model import World, Robot, Rotation
+from gherkin.model import World, Robot
 
 
 class Visualizer:
@@ -37,8 +37,8 @@ class Visualizer:
         Display the robot
         """
         j0 = self.world.robot_origin
-        j1 = self.world.convert_to_display(robot.joint_1_pos())
-        j2 = self.world.convert_to_display(robot.joint_2_pos())
+        j1 = self.world.convert_to_display(robot.arm.joint_1_pos())
+        j2 = self.world.convert_to_display(robot.arm.joint_2_pos())
         # Draw joint 0
         pygame.draw.circle(self.screen, self.BLACK, j0, 4)
         # Draw link 1
@@ -49,9 +49,9 @@ class Visualizer:
         pygame.draw.line(self.screen, self.BLACK, j1, j2, 2)
         # Draw joint 2
         pygame.draw.circle(self.screen, self.BLACK, j2, 4)
-        self.draw_rotation_indicator(robot)
+        self.draw_rotation_indicator(robot.base)
 
-    def draw_rotation_indicator(self, robot):
+    def draw_rotation_indicator(self, base):
         """
         Draws a line to show the rotation of the robot arm as if from above, to indicate the it's planar angle
         """
@@ -59,10 +59,10 @@ class Visualizer:
         self.screen.blit(text, (1, self.world.height + 50))
         center = (130, self.world.height + 60)
         line_length = 25
-        x1 = center[0] + math.cos(math.radians(robot.angle.inverse.angle)) * line_length
-        y1 = center[1] + math.sin(math.radians(robot.angle.inverse.angle)) * line_length
-        x2 = center[0] + math.cos(math.radians(robot.angle.angle)) * line_length
-        y2 = center[1] + math.sin(math.radians(robot.angle.angle)) * line_length
+        x1 = center[0] + math.cos(math.radians(base.angle.inverse.angle)) * line_length
+        y1 = center[1] + math.sin(math.radians(base.angle.inverse.angle)) * line_length
+        x2 = center[0] + math.cos(math.radians(base.angle.angle)) * line_length
+        y2 = center[1] + math.sin(math.radians(base.angle.angle)) * line_length
         cx = (x1 + x2) / 2
         cy = (y1 + y2) / 2
         pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)

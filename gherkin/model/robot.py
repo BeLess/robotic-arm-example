@@ -1,126 +1,77 @@
-import logging
-from dataclasses import dataclass, field
-from typing import List, Tuple
+import time
+from typing import Optional
 
 import numpy as np
+from dataclasses import dataclass, field
 
-from gherkin.model import Angle, DIRECTION, SPEED
-
-
-@dataclass()
-class RobotLimits:
-    JOINT_LIMITS: Tuple[float, float] = (-6.28, 6.28)
-    MAX_VELOCITY = 15
-    MAX_ACCELERATION = 50
-    FAST_ROTATION_SPEED: int = 5
-    FINE_ROTATION_SPEED: int = 1
-    DT = 0.066
-
-    def check_angle_limits(self, theta: float) -> bool:
-        return self.JOINT_LIMITS[0] < theta < self.JOINT_LIMITS[1]
-
-    def max_velocity(self, all_theta: List[float]) -> float:
-        return float(max(abs(np.diff(all_theta) / self.DT), default=0.))
-
-    def max_acceleration(self, all_theta: List[float]) -> float:
-        return float(max(abs(np.diff(np.diff(all_theta)) / self.DT / self.DT), default=0.))
+from gherkin.model.arm import Arm
+from gherkin.model.base import RotatingBase
+from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED
+#from gherkin.util import Visualizer
 
 
 @dataclass()
 class Robot:
-    _theta_0: float = 0  # radians
-    _theta_1: float = 0  # radians
-    _angle: Angle = Angle(0)   # degrees
-    link_1: float = 75.  # pixels
-    link_2: float = 50.  # pixels
-    limits: RobotLimits = field(default_factory=RobotLimits)
-    all_theta_0: List[float] = field(default_factory=list)
-    all_theta_1: List[float] = field(default_factory=list)
+    arm: Arm = field(default_factory=Arm)
+    base: RotatingBase = field(default_factory=RotatingBase)
 
-    # Getters/Setters
-    @property
-    def theta_0(self) -> float:
-        return self._theta_0
+    def reach(self, goal: Goal, vis) -> None:
+        running = True
+        found_angle = False
+        goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
 
-    @theta_0.setter
-    def theta_0(self, value: float) -> None:
-        self.all_theta_0.append(value)
-        self._theta_0 = value
-        # Check limits
-        assert self.limits.check_angle_limits(value), \
-            f'Joint 0 value {value} exceeds joint limits'
-        assert self.limits.max_velocity(self.all_theta_0) < self.limits.MAX_VELOCITY, \
-            f'Joint 0 Velocity {self.limits.max_velocity(self.all_theta_0)} exceeds velocity limit'
-        assert self.limits.max_acceleration(self.all_theta_0) < self.limits.MAX_ACCELERATION, \
-            f'Joint 0 Accel {self.limits.max_acceleration(self.all_theta_0)} exceeds acceleration limit'
+        while running:
+            # Step the controller
+            if not found_angle:
+                rotation = self._determine_rotation(goal) if not found_angle else None
+                if rotation:
+                    self._rotate(rotation)
+                    found_angle = self._check_angle(goal)
 
-    @property
-    def theta_1(self) -> float:
-        return self._theta_1
+            else:
+                self._move_arm(goal_theta_0, goal_theta_1)
 
-    @theta_1.setter
-    def theta_1(self, value: float) -> None:
-        self.all_theta_1.append(value)
-        self._theta_1 = value
-        assert self.limits.check_angle_limits(value), \
-            f'Joint 1 value {value} exceeds joint limits'
-        assert self.limits.max_velocity(self.all_theta_1) < self.limits.MAX_VELOCITY, \
-            f'Joint 1 Velocity {self.limits.max_velocity(self.all_theta_1)} exceeds velocity limit'
-        assert self.limits.max_acceleration(self.all_theta_1) < self.limits.MAX_ACCELERATION, \
-            f'Joint 1 Accel {self.limits.max_acceleration(self.all_theta_1)} exceeds acceleration limit'
+            success = self._check_success(goal)
 
-    @property
-    def angle(self) -> Angle:
-        return self._angle
+            # Update the display
+            running = vis.update_display(self, success)
 
-    def rotate(self, direction: DIRECTION, speed: SPEED) -> None:
-        rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
-        print(f"Rotating robot {rotation_rate} degrees {direction.value}")
-        if direction == DIRECTION.CLOCKWISE:
-            self._angle += rotation_rate
-        else:
-            self._angle -= rotation_rate
+            # sleep for Robot DT seconds, to force update rate
 
-    # Kinematics
-    def joint_1_pos(self) -> Tuple[float, float]:
+    def _check_success(self, goal: Goal) -> bool:
         """
-        Compute the x, y position of joint 1
+        Check that robot's joint 2 is very close to the goal.
+        Don't not use exact comparison, to be robust to floating point calculations.
         """
-        return self.link_1 * np.cos(self.theta_0), self.link_1 * np.sin(self.theta_0)
 
-    def joint_2_pos(self) -> Tuple[float, float]:
+        return np.allclose(self.arm.joint_2_pos(), (goal.x, goal.y), atol=0.25)
+
+    def _check_angle(self, goal: Goal) -> bool:
         """
-        Compute the x, y position of joint 2
+        Check that the robots angle matches the angle of the goal.
+        Because the arm can reach "behind" the point of rotation, reflective angles are functionally equivalent
         """
-        return self.forward(self.theta_0, self.theta_1)
+        return (self.base.angle == goal.angle) or ((self.base.angle - 180) == goal.angle)
 
-    @classmethod
-    def forward(cls, theta_0: float, theta_1: float) -> Tuple[float, float]:
-        """
-        Compute the x, y position of the end of the links from the joint angles
-        """
-        x = cls.link_1 * np.cos(theta_0) + cls.link_2 * np.cos(theta_0 + theta_1)
-        y = cls.link_1 * np.sin(theta_0) + cls.link_2 * np.sin(theta_0 + theta_1)
+    def _rotate(self, rotation: Rotation):
+        self.base.rotate(rotation.direction, rotation.speed)
+        time.sleep(self.base.limits.DT)
 
-        return x, y
+    def _move_arm(self, goal_theta_0, goal_theta_1):
+        theta_0_error = goal_theta_0 - self.arm.theta_0
+        theta_1_error = goal_theta_1 - self.arm.theta_1
+        self.arm.theta_0 += theta_0_error / 10
+        self.arm.theta_1 += theta_1_error / 10
 
-    @classmethod
-    def inverse(cls, x: float, y: float) -> Tuple[float, float]:
-        """
-        Compute the joint angles from the position of the end of the links
-        """
-        theta_1 = np.arccos((x ** 2 + y ** 2 - cls.link_1 ** 2 - cls.link_2 ** 2)
-                            / (2 * cls.link_1 * cls.link_2))
-        theta_0 = np.arctan2(y, x) - \
-            np.arctan((cls.link_2 * np.sin(theta_1)) /
-                      (cls.link_1 + cls.link_2 * np.cos(theta_1)))
+        time.sleep(self.arm.limits.DT)
 
-        return theta_0, theta_1
+        return Robot
 
-    @classmethod
-    def min_reachable_radius(cls) -> float:
-        return max(cls.link_1 - cls.link_2, 0)
+    def _determine_rotation(self, goal: Goal) -> Rotation:
+        difference_cw = abs(self.base.angle.angle - goal.angle.angle)
+        difference_ccw = abs(self.base.angle.inverse.angle - goal.angle.angle)
+        direction, difference = (DIRECTION.CLOCKWISE, difference_cw) if difference_cw < difference_ccw \
+            else (DIRECTION.COUNTER_CLOCKWISE, difference_ccw)
+        speed = SPEED.FAST if difference > self.base.limits.FAST_ROTATION_SPEED else SPEED.FINE
 
-    @classmethod
-    def max_reachable_radius(cls) -> float:
-        return cls.link_1 + cls.link_2
+        return Rotation(direction, speed)
