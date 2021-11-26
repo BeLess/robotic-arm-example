@@ -16,4 +16,4 @@ def generate_random_goal(min_radius: float, max_radius: float) -> Goal:
     y = int(r * np.sin(theta))
     angle = Angle(np.random.randint(low=0, high=180))
     print(x, y, angle)
-    return Goal(-75, 75, Angle(111))
+    return Goal(x, y, angle)
