@@ -1,5 +1,4 @@
 import time
-from typing import Optional
 
 import numpy as np
 from dataclasses import dataclass, field
@@ -7,7 +6,6 @@ from dataclasses import dataclass, field
 from gherkin.model.arm import Arm
 from gherkin.model.base import RotatingBase
 from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED
-#from gherkin.util import Visualizer
 
 
 @dataclass()
@@ -18,9 +16,10 @@ class Robot:
     def reach(self, goal: Goal, vis) -> None:
         running = True
         found_angle = False
+        success= False
         goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
 
-        while running:
+        while not success:
             # Step the controller
             if not found_angle:
                 rotation = self._determine_rotation(goal) if not found_angle else None
@@ -30,13 +29,10 @@ class Robot:
 
             else:
                 self._move_arm(goal_theta_0, goal_theta_1)
-
-            success = self._check_success(goal)
+                success = self._check_success(goal)
 
             # Update the display
-            running = vis.update_display(self, success)
-
-            # sleep for Robot DT seconds, to force update rate
+            vis.update_display(self, goal, success)
 
     def _check_success(self, goal: Goal) -> bool:
         """

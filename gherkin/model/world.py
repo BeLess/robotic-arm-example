@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 from typing import Tuple, Union
 
-from gherkin.model import Goal
 
 @dataclass()
 class World:
     width: int
     height: int
     robot_origin: Tuple[int, int]
-    goal: Goal
 
     def convert_to_display(
             self, point: Tuple[Union[int, float], Union[int, float]]) -> Tuple[int, int]:

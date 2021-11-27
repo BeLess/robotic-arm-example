@@ -3,7 +3,7 @@ from typing import Tuple
 import pygame
 from numpy.lib import math
 
-from gherkin.model import World, Robot
+from gherkin.model import World, Robot, Goal
 
 
 class Visualizer:
@@ -24,11 +24,11 @@ class Visualizer:
         pygame.display.set_caption('Gherkin Challenge')
         self.font = pygame.font.SysFont('freesansbolf.tff', 30)
 
-    def display_world(self) -> None:
+    def display_world(self, goal: Goal) -> None:
         """
         Display the world
         """
-        goal = self.world.convert_to_display((self.world.goal.x, self.world.goal.y))
+        goal = self.world.convert_to_display((goal.x, goal.y))
         pygame.draw.circle(self.screen, self.RED, goal, 6)
 
 
@@ -69,7 +69,7 @@ class Visualizer:
         pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 3)
         pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 3)
 
-    def update_display(self, robot: Robot, success: bool) -> bool:
+    def update_display(self, robot: Robot, goal: Goal, success: bool):
         for event in pygame.event.get():
             # Keypress
             if event.type == pygame.KEYDOWN:
@@ -82,7 +82,7 @@ class Visualizer:
 
         self.screen.fill(self.WHITE)
 
-        self.display_world()
+        self.display_world(goal)
 
         self.display_robot(robot)
 
@@ -91,8 +91,6 @@ class Visualizer:
             self.screen.blit(text, (1, 1))
 
         pygame.display.flip()
-
-        return True
 
     def cleanup(self) -> None:
         pygame.quit()

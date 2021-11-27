@@ -7,7 +7,7 @@ from gherkin.model import Angle, DIRECTION, SPEED
 class RotationLimits:
     FAST_ROTATION_SPEED: int = 5
     FINE_ROTATION_SPEED: int = 1
-    DT: float = 0.66
+    DT: float = 0.066
 
 
 @dataclass
