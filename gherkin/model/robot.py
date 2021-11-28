@@ -1,9 +1,9 @@
 import time
 import uuid
+from dataclasses import dataclass, field
 from datetime import datetime
 
 import numpy as np
-from dataclasses import dataclass, field
 from pykka import ThreadingActor
 
 from gherkin.model.arm import Arm
@@ -43,7 +43,11 @@ class Robot(ThreadingActor):
         found_angle = False
         success = False
         goal = self._evaluate_goal(goal)
-        goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
+        try:
+            goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
+        except RuntimeWarning as e:
+            self.arm.reset()
+            return Result(self.id, goal, False, datetime.now(), e)
 
         while not success:
             if not self._check_angle(goal):

@@ -57,7 +57,7 @@ class Visualizer:
         text = self.font.render('Rotating:', True, self.BLACK)
         self.screen.blit(text, (1, self.world.height + 50))
         center = (self.world.robot_origins[robot.offset][0], self.world.height + 60)
-        line_length = 25
+        line_length = 35
         x1 = center[0] + math.cos(math.radians(robot.base.angle.inverse.angle)) * line_length
         y1 = center[1] + math.sin(math.radians(robot.base.angle.inverse.angle)) * line_length
         x2 = center[0] + math.cos(math.radians(robot.base.angle.angle)) * line_length
@@ -65,8 +65,8 @@ class Visualizer:
         cx = (x1 + x2) / 2
         cy = (y1 + y2) / 2
         pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)
-        pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 3)
-        pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 3)
+        pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 4)
+        pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 4)
 
     def update_display(self, robot: Robot, goal: Goal, success: bool):
         for event in pygame.event.get():
@@ -87,7 +87,7 @@ class Visualizer:
 
         if success:
             text = self.font.render('Success!', True, self.BLACK)
-            self.screen.blit(text, (1, 1))
+            self.screen.blit(text, (self.world.robot_origins[robot.offset][0], 1))
 
         pygame.display.flip()
 
