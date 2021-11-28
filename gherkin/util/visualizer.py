@@ -31,7 +31,6 @@ class Visualizer:
         goal = self.world.convert_to_display((goal.x, goal.y))
         pygame.draw.circle(self.screen, self.RED, goal, 6)
 
-
     def display_robot(self, robot: Robot) -> None:
         """
         Display the robot
