@@ -20,6 +20,7 @@ class Robot(ThreadingActor):
         arm: A double jointed arm responsible for reaching in a 2d space
         base: A base capable of rotating 360 degrees in order to reach a goal in 3d space
     """
+    offset: int
     id: str = field(default_factory=lambda: str(uuid.uuid1())[:8])
     arm: Arm = field(default_factory=Arm)
     base: RotatingBase = field(default_factory=RotatingBase)
@@ -45,7 +46,6 @@ class Robot(ThreadingActor):
         goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
 
         while not success:
-            # Step the controller
             if not self._check_angle(goal):
                 rotation = self._determine_rotation(goal) if not found_angle else None
                 if rotation:
@@ -57,10 +57,12 @@ class Robot(ThreadingActor):
                     success = self._check_success(goal)
                 except Exception as e:
                     return Result(self.id, goal, False, datetime.now(), e)
+                finally:
+                    self.arm.reset()
 
             if vis:
                 vis.update_display(self, goal, success)
-        self.arm.reset()
+
         return Result(self.id, goal, True, datetime.now(), None)
 
     def _check_success(self, goal: Goal) -> bool:
