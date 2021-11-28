@@ -14,15 +14,6 @@ class ArmLimits:
     MAX_ACCELERATION = 50
     DT = 0.033
 
-    def check_angle_limits(self, theta: float) -> bool:
-        return self.JOINT_LIMITS[0] < theta < self.JOINT_LIMITS[1]
-
-    def max_velocity(self, all_theta: List[float]) -> float:
-        return float(max(abs(np.diff(all_theta) / self.DT), default=0.))
-
-    def max_acceleration(self, all_theta: List[float]) -> float:
-        return float(max(abs(np.diff(np.diff(all_theta)) / self.DT / self.DT), default=0.))
-
 
 @dataclass()
 class Arm:
@@ -42,13 +33,6 @@ class Arm:
     def theta_0(self, value: float) -> None:
         self.all_theta_0.append(value)
         self._theta_0 = value
-        # Check limits
-        assert self.limits.check_angle_limits(value), \
-            f'Joint 0 value {value} exceeds joint limits'
-        assert self.limits.max_velocity(self.all_theta_0) < self.limits.MAX_VELOCITY, \
-            f'Joint 0 Velocity {self.limits.max_velocity(self.all_theta_0)} exceeds velocity limit'
-        assert self.limits.max_acceleration(self.all_theta_0) < self.limits.MAX_ACCELERATION, \
-            f'Joint 0 Accel {self.limits.max_acceleration(self.all_theta_0)} exceeds acceleration limit'
 
     @property
     def theta_1(self) -> float:
@@ -58,12 +42,6 @@ class Arm:
     def theta_1(self, value: float) -> None:
         self.all_theta_1.append(value)
         self._theta_1 = value
-        assert self.limits.check_angle_limits(value), \
-            f'Joint 1 value {value} exceeds joint limits'
-        assert self.limits.max_velocity(self.all_theta_1) < self.limits.MAX_VELOCITY, \
-            f'Joint 1 Velocity {self.limits.max_velocity(self.all_theta_1)} exceeds velocity limit'
-        assert self.limits.max_acceleration(self.all_theta_1) < self.limits.MAX_ACCELERATION, \
-            f'Joint 1 Accel {self.limits.max_acceleration(self.all_theta_1)} exceeds acceleration limit'
 
     def joint_1_pos(self) -> Tuple[float, float]:
         """
