@@ -1,6 +1,6 @@
 import time
 import uuid
-from typing import Tuple
+from datetime import datetime
 
 import numpy as np
 from dataclasses import dataclass, field
@@ -8,7 +8,7 @@ from pykka import ThreadingActor
 
 from gherkin.model.arm import Arm
 from gherkin.model.base import RotatingBase
-from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED
+from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED, Result
 
 
 @dataclass()
@@ -27,7 +27,7 @@ class Robot(ThreadingActor):
     def __post_init__(self):
         super().__init__()
 
-    def reach(self, goal: Goal, vis=None) -> Tuple[str, Goal, bool]:
+    def reach(self, goal: Goal, vis=None) -> Result:
         """
         Given a goal with (x, y, angle) coordinates, manipulate the various parts of the robot until the goal is reached
         If a visualizer is given, this also updates the visualization of the process
@@ -56,12 +56,12 @@ class Robot(ThreadingActor):
                     self._move_arm(goal_theta_0, goal_theta_1)
                     success = self._check_success(goal)
                 except Exception as e:
-                    return self.id, goal, False
+                    return Result(self.id, goal, False, datetime.now(), e)
 
             if vis:
                 vis.update_display(self, goal, success)
         self.arm.reset()
-        return self.id, goal, True
+        return Result(self.id, goal, True, datetime.now(), None)
 
     def _check_success(self, goal: Goal) -> bool:
         """

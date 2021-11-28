@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 @dataclass(frozen=True, order=True, eq=True)
@@ -56,3 +57,10 @@ class Goal(NamedTuple):
 class Rotation(NamedTuple):
     direction: DIRECTION
     speed: SPEED
+
+class Result(NamedTuple):
+    robot_id: str
+    goal: Goal
+    success: bool
+    completed_at: datetime
+    error: Optional[Exception]
