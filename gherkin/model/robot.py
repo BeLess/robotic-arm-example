@@ -10,10 +10,27 @@ from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED
 
 @dataclass()
 class Robot:
+    """
+    A controller for a number of different motorized parts working in concert to reach a goal/perform an actioon
+
+    Args:
+        arm: A double jointed arm responsible for reaching in a 2d space
+        base: A base capable of rotating 360 degrees in order to reach a goal in 3d space
+    """
     arm: Arm = field(default_factory=Arm)
     base: RotatingBase = field(default_factory=RotatingBase)
 
-    def reach(self, goal: Goal, vis) -> None:
+    def reach(self, goal: Goal, vis=None) -> None:
+        """
+        Given a goal with (x, y, angle) coordinates, manipulate the various parts of the robot until the goal is reached
+        If a visualizer is given, this also updates the visualization of the process
+        Args:
+            goal: a representation of the desired location of the end position of the robot arm
+            vis: an optional visualizer component for the robot to keep updated
+
+        Returns:
+
+        """
         found_angle = False
         success = False
         goal = self._evaluate_goal(goal)
@@ -49,11 +66,28 @@ class Robot:
         """
         return (self.base.angle == goal.angle) or (self.base.angle.inverse == goal.angle)
 
-    def _rotate(self, rotation: Rotation):
+    def _rotate(self, rotation: Rotation) -> None:
+        """
+        Tells the robot's base to rotate in a specified direction at a specified speed
+        Args:
+            rotation: the direction and speed of the desired rotation
+
+        Returns:
+
+        """
         self.base.rotate(rotation.direction, rotation.speed)
         time.sleep(self.base.limits.DT)
 
-    def _move_arm(self, goal_theta_0, goal_theta_1):
+    def _move_arm(self, goal_theta_0, goal_theta_1) -> None:
+        """
+        Given the difference between current position and the goal, instructs the arm joints to move towards the goal
+        Args:
+            goal_theta_0:
+            goal_theta_1:
+
+        Returns:
+
+        """
         theta_0_error = goal_theta_0 - self.arm.theta_0
         theta_1_error = goal_theta_1 - self.arm.theta_1
         self.arm.theta_0 += theta_0_error / 10
@@ -61,9 +95,15 @@ class Robot:
 
         time.sleep(self.arm.limits.DT)
 
-        return Robot
-
     def _determine_rotation(self, goal: Goal) -> Rotation:
+        """
+        Determines the ideal direction (clockwise or counterclockwise and speed (based on the robots limits)
+        to rotate the base in order to reach the goal.
+        Args:
+            goal: a representation of the desired location of the end position of the robot arm
+        Returns:
+
+        """
         direction = DIRECTION.CLOCKWISE if ((goal.angle - self.base.angle).angle % 360 < 180) else DIRECTION.COUNTER_CLOCKWISE
 
         difference = abs(self.base.angle.angle - goal.angle.angle)
