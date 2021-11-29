@@ -1,30 +1,44 @@
 """
 main.py
 """
+import itertools
+import pprint
 
-from gherkin.model import Robot, World, Goal
+import pykka
+
+from gherkin.model import Robot
 from gherkin.model.arm import Arm
-from gherkin.util import generate_random_goal, Visualizer
+from gherkin.model.fleet_manager import FleetManager
+from gherkin.util import generate_random_goal
+from gherkin.util.utilities import generate_visualizer
 
 
 def main() -> None:
-    height = 300
-    width = 300
-    robot_origin = (int(width / 2), int(height / 2))
-    goal = generate_random_goal(Arm.min_reachable_radius(), Arm.max_reachable_radius())
-    robot = Robot()
-    world = World(width, height, robot_origin)
-    vis = Visualizer(world)
-
     try:
-        robot.reach(goal, vis)
-        input("prompt: ")
-    except AssertionError as e:
+        run_fleet(4, 100)
+        #run_single(10)
+    except Exception as e:
         print(f'ERROR: {e}, Aborting.')
+        exit(0)
     except KeyboardInterrupt:
         pass
-    finally:
-        vis.cleanup()
+
+
+def run_fleet(num_robots: int, num_goals: int):
+    robots = [Robot.start(i).proxy() for i in range(num_robots)]
+    vis = generate_visualizer(num_robots)
+    fleet_manager = FleetManager(robots, vis)
+    fleet_manager.receive_goals(
+        [generate_random_goal(Arm.min_reachable_radius(), Arm.max_reachable_radius()) for _ in range(num_goals)]
+    )
+
+
+def run_single(num_goals: int):
+    vis = generate_visualizer(1)
+    goals = [generate_random_goal(Arm.min_reachable_radius(), Arm.max_reachable_radius()) for _ in range(num_goals)]
+    robot = Robot(0)
+    for goal in goals:
+        robot.reach(goal, vis)
 
 
 if __name__ == '__main__':

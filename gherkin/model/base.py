@@ -45,7 +45,6 @@ class RotatingBase:
 
         """
         rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
-        print(f"Rotating robot {rotation_rate} degrees {direction.value}")
         if direction == DIRECTION.CLOCKWISE:
             self._angle += rotation_rate
         else:

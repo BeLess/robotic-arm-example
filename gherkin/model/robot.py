@@ -1,26 +1,36 @@
 import time
+import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
 
 import numpy as np
-from dataclasses import dataclass, field
+from pykka import ThreadingActor
 
 from gherkin.model.arm import Arm
 from gherkin.model.base import RotatingBase
-from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED
+from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED, Result
 
 
 @dataclass()
-class Robot:
+class Robot(ThreadingActor):
     """
     A controller for a number of different motorized parts working in concert to reach a goal/perform an actioon
 
     Args:
+        offset: The position of this robot in relation to other robots in the fleet
+        id: A unique identifier for this robot
         arm: A double jointed arm responsible for reaching in a 2d space
         base: A base capable of rotating 360 degrees in order to reach a goal in 3d space
     """
+    offset: int
+    id: str = field(default_factory=lambda: str(uuid.uuid1())[:8])
     arm: Arm = field(default_factory=Arm)
     base: RotatingBase = field(default_factory=RotatingBase)
 
-    def reach(self, goal: Goal, vis=None) -> None:
+    def __post_init__(self):
+        super().__init__()
+
+    def reach(self, goal: Goal, vis=None) -> Result:
         """
         Given a goal with (x, y, angle) coordinates, manipulate the various parts of the robot until the goal is reached
         If a visualizer is given, this also updates the visualization of the process
@@ -31,25 +41,35 @@ class Robot:
         Returns:
 
         """
+        print(f"{self.id} recieved goal: {goal}")
         found_angle = False
         success = False
         goal = self._evaluate_goal(goal)
-        goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
+        try:
+            goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
+        except Exception as e:
+            self.arm.reset()
+            return Result(self.id, goal, False, datetime.now(), e)
 
         while not success:
-            # Step the controller
-            if not found_angle:
+            if not self._check_angle(goal):
                 rotation = self._determine_rotation(goal) if not found_angle else None
                 if rotation:
                     self._rotate(rotation)
-                    found_angle = self._check_angle(goal)
 
             else:
-                self._move_arm(goal_theta_0, goal_theta_1)
-                success = self._check_success(goal)
+                try:
+                    self._move_arm(goal_theta_0, goal_theta_1)
+                    success = self._check_success(goal)
+                except Exception as e:
+                    return Result(self.id, goal, False, datetime.now(), e)
+                finally:
+                    self.arm.reset()
 
-            # Update the display
-            vis.update_display(self, goal, success)
+            if vis:
+                vis.update_display(self, goal, success)
+
+        return Result(self.id, goal, True, datetime.now(), None)
 
     def _check_success(self, goal: Goal) -> bool:
         """
