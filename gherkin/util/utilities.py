@@ -20,6 +20,16 @@ def generate_random_goal(min_radius: float, max_radius: float) -> Goal:
 
 
 def generate_visualizer(num_robots: int):
+    """
+    Generates a Visualizer object with parameters based on the number of robots
+    Args:
+        num_robots: how many robots will be in the fleet
+
+    Returns: A visualizer object built for the current problem space
+    Notes:
+        Currently only scales horizontally.
+
+    """
     height = 300
     robot_width = 300
     total_width = robot_width * num_robots

@@ -17,6 +17,8 @@ class Robot(ThreadingActor):
     A controller for a number of different motorized parts working in concert to reach a goal/perform an actioon
 
     Args:
+        offset: The position of this robot in relation to other robots in the fleet
+        id: A unique identifier for this robot
         arm: A double jointed arm responsible for reaching in a 2d space
         base: A base capable of rotating 360 degrees in order to reach a goal in 3d space
     """

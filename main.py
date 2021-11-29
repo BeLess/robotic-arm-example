@@ -22,9 +22,6 @@ def main() -> None:
         exit(0)
     except KeyboardInterrupt:
         pass
-    finally:
-        input("Press enter to exit:")
-        exit(0)
 
 
 def run_fleet(num_robots: int, num_goals: int):

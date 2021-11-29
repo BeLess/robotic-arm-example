@@ -87,7 +87,7 @@ class Visualizer:
 
         if success:
             text = self.font.render('Success!', True, self.BLACK)
-            self.screen.blit(text, (self.world.robot_origins[robot.offset][0], 1))
+            self.screen.blit(text, (self.world.robot_origins[robot.offset][0]-55, 1))
 
         pygame.display.flip()
 
