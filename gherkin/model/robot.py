@@ -45,7 +45,7 @@ class Robot(ThreadingActor):
         goal = self._evaluate_goal(goal)
         try:
             goal_theta_0, goal_theta_1 = self.arm.inverse(goal.x, goal.y)
-        except RuntimeWarning as e:
+        except Exception as e:
             self.arm.reset()
             return Result(self.id, goal, False, datetime.now(), e)
 

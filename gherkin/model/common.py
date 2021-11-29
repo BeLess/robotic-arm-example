@@ -48,15 +48,26 @@ class SPEED(Enum):
     FINE = "FINE"
 
 
-class Goal(NamedTuple):
+@dataclass(order=True, eq=True)
+class Goal:
     x: int
     y: int
     angle: Angle
+
+    def __sub__(self, other):
+        if type(other) == Goal:
+            x_diff = abs(self.x - other.x)
+            y_diff = abs(self.y - other.y)
+            angle_diff = self.angle - other.angle
+            return x_diff, y_diff, angle_diff
+        else:
+            raise TypeError
 
 
 class Rotation(NamedTuple):
     direction: DIRECTION
     speed: SPEED
+
 
 class Result(NamedTuple):
     robot_id: str
