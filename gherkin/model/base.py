@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from gherkin.model import Angle, DIRECTION, SPEED
+from gherkin.common import Angle, DIRECTION, SPEED
 
 
 @dataclass

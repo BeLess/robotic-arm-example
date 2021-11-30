@@ -3,7 +3,8 @@ from typing import Tuple
 import pygame
 from numpy.lib import math
 
-from gherkin.model import World, Robot, Goal
+from gherkin.common import Goal
+from gherkin.model import World, Robot
 
 
 class Visualizer:

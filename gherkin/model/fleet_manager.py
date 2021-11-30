@@ -6,8 +6,7 @@ from typing import List, Dict
 import pykka
 from pykka import ActorProxy
 
-from gherkin.model import Goal
-from gherkin.model.common import Result
+from gherkin.common import Goal, Result
 from gherkin.util import Visualizer
 
 

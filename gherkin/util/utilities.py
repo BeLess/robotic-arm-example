@@ -1,6 +1,7 @@
 import numpy as np
 
-from gherkin.model import Goal, Angle, World
+from gherkin.common import Angle, Goal
+from gherkin.model import World
 from gherkin.util.visualizer import Visualizer
 
 

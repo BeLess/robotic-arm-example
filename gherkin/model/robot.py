@@ -6,9 +6,9 @@ from datetime import datetime
 import numpy as np
 from pykka import ThreadingActor
 
+from gherkin.common import Goal, DIRECTION, Result, Rotation, SPEED
 from gherkin.model.arm import Arm
 from gherkin.model.base import RotatingBase
-from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED, Result
 
 
 @dataclass()
