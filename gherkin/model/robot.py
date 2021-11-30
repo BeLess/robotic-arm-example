@@ -68,7 +68,7 @@ class Robot(ThreadingActor):
 
             if vis:
                 vis.update_display(self, goal, success)
-
+        time.sleep(1)
         return Result(self.id, goal, True, datetime.now(), None)
 
     def _check_success(self, goal: Goal) -> bool:
@@ -95,7 +95,7 @@ class Robot(ThreadingActor):
         Returns:
 
         """
-        self.base.rotate(rotation.direction, rotation.speed)
+        self.base.rotate(rotation)
         time.sleep(self.base.limits.DT)
 
     def _move_arm(self, goal_theta_0, goal_theta_1) -> None:
