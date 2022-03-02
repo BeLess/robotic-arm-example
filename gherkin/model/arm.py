@@ -6,6 +6,9 @@ import numpy as np
 
 @dataclass
 class ArmLimits:
+    """
+    A class responsible for containing the physical limits of a robotic arm
+    """
     JOINT_LIMITS: Tuple[float, float] = (-6.28, 6.28)
     MAX_VELOCITY = 15
     MAX_ACCELERATION = 50
