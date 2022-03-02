@@ -6,9 +6,9 @@ from datetime import datetime
 import numpy as np
 from pykka import ThreadingActor
 
+from gherkin.common import Goal, DIRECTION, Result, Rotation, SPEED
 from gherkin.model.arm import Arm
 from gherkin.model.base import RotatingBase
-from gherkin.model.common import Rotation, Goal, DIRECTION, SPEED, Result
 
 
 @dataclass()
@@ -68,7 +68,7 @@ class Robot(ThreadingActor):
 
             if vis:
                 vis.update_display(self, goal, success)
-
+        time.sleep(1)
         return Result(self.id, goal, True, datetime.now(), None)
 
     def _check_success(self, goal: Goal) -> bool:
@@ -95,7 +95,7 @@ class Robot(ThreadingActor):
         Returns:
 
         """
-        self.base.rotate(rotation.direction, rotation.speed)
+        self.base.rotate(rotation)
         time.sleep(self.base.limits.DT)
 
     def _move_arm(self, goal_theta_0, goal_theta_1) -> None:
@@ -124,10 +124,11 @@ class Robot(ThreadingActor):
         Returns:
 
         """
-        direction = DIRECTION.CLOCKWISE if ((goal.angle - self.base.angle).angle % 360 < 180) else DIRECTION.COUNTER_CLOCKWISE
+        direction = DIRECTION.CLOCKWISE if ((goal.angle - self.base.angle).angle < 180) else DIRECTION.COUNTER_CLOCKWISE
 
-        difference = abs(self.base.angle.angle - goal.angle.angle)
-        speed = SPEED.FAST if difference > self.base.limits.FAST_ROTATION_SPEED else SPEED.FINE
+        diff = abs(self.base.angle.angle - goal.angle.angle) % 360
+        distance = 360 - diff if diff > 180 else diff
+        speed = SPEED.FAST if distance >= self.base.limits.FAST_ROTATION_SPEED else SPEED.FINE
 
         return Rotation(direction, speed)
 
@@ -139,9 +140,9 @@ class Robot(ThreadingActor):
         result in a nonsensical result (rotating "behind" and reaching "forward" for a -x value)
         """
 
-        optimal_angle = goal.angle if self.base.angle + 90 > goal.angle else goal.angle.inverse
+        optimal_angle = goal.angle if (self.base.angle + 90 > goal.angle or self.base.angle - 90 < goal.angle) else goal.angle.inverse
         goal = Goal(
-            x=(-goal.x) if optimal_angle.angle > 180 and goal.x < 0 else goal.x,
+            x=(-goal.x) if optimal_angle.angle > 180 else goal.x,
             y=goal.y,
             angle=optimal_angle
         )
