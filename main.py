@@ -10,7 +10,7 @@ from gherkin.util.utilities import generate_visualizer
 
 def main() -> None:
     try:
-        run_fleet(4, 100)
+        run_fleet(2, 8)
         #run_single(10)
     except Exception as e:
         print(f'ERROR: {e}, Aborting.')
