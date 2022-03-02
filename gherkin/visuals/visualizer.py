@@ -1,8 +1,9 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 import pygame
+from numpy.lib import math
 
-from gherkin.model import World, Robot
+from gherkin.model import World, Robot, Rotation
 
 
 class Visualizer:
@@ -18,7 +19,7 @@ class Visualizer:
         pygame.init()
         pygame.font.init()
         self.world = world
-        self.screen = pygame.display.set_mode((world.width, world.height))
+        self.screen = pygame.display.set_mode((world.width, world.height + 100))
         pygame.display.set_caption('Gherkin Challenge')
         self.font = pygame.font.SysFont('freesansbolf.tff', 30)
 
@@ -26,8 +27,9 @@ class Visualizer:
         """
         Display the world
         """
-        goal = self.world.convert_to_display(self.world.goal)
+        goal = self.world.convert_to_display((self.world.goal.x, self.world.goal.y))
         pygame.draw.circle(self.screen, self.RED, goal, 6)
+
 
     def display_robot(self, robot: Robot) -> None:
         """
@@ -46,6 +48,24 @@ class Visualizer:
         pygame.draw.line(self.screen, self.BLACK, j1, j2, 2)
         # Draw joint 2
         pygame.draw.circle(self.screen, self.BLACK, j2, 4)
+        self.draw_rotation_indicator(robot)
+
+    def draw_rotation_indicator(self, robot):
+        """
+        Draws a line to show the rotation of the robot arm as if from above, to indicate the it's planar angle
+        """
+        text = self.font.render('Rotating:', True, self.BLACK)
+        self.screen.blit(text, (1, self.world.height + 50))
+        center = (130, self.world.height + 60)
+        line_length = 25
+        x1 = center[0] + math.cos(math.radians(robot.angle.inverse.angle)) * line_length
+        y1 = center[1] + math.sin(math.radians(robot.angle.inverse.angle)) * line_length
+        x2 = center[0] + math.cos(math.radians(robot.angle.angle)) * line_length
+        y2 = center[1] + math.sin(math.radians(robot.angle.angle)) * line_length
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+        pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)
+        pygame.draw.line(self.screen, self.BLACK, (x1, y1), (x2, y2), 3)
 
     def update_display(self, robot: Robot, success: bool) -> bool:
         for event in pygame.event.get():
