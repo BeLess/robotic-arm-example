@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from gherkin.model import Angle, DIRECTION, SPEED
+from gherkin.common import Angle, DIRECTION, Rotation, SPEED
 
 
 @dataclass
@@ -34,18 +34,17 @@ class RotatingBase:
     def angle(self) -> Angle:
         return self._angle
 
-    def rotate(self, direction: DIRECTION, speed: SPEED) -> None:
+    def rotate(self, rotation: Rotation) -> None:
         """
         Rotates increases or decreases the angle of the base, determined by the robot
         Args:
-            direction: Clockwise or Counterclockwise
-            speed: FINE or FAST, referring to the base's limits
+            rotation: A wrapper containing the direction of rotation as well as the speed
 
         Returns:
 
         """
-        rotation_rate = self.limits.FAST_ROTATION_SPEED if speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
-        if direction == DIRECTION.CLOCKWISE:
+        rotation_rate = self.limits.FAST_ROTATION_SPEED if rotation.speed == SPEED.FAST else self.limits.FINE_ROTATION_SPEED
+        if rotation.direction == DIRECTION.CLOCKWISE:
             self._angle += rotation_rate
         else:
             self._angle -= rotation_rate
