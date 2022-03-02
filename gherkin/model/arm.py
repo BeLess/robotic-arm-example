@@ -77,6 +77,10 @@ class Arm:
         """
         return self.forward(self.theta_0, self.theta_1)
 
+    def reset(self):
+        self.all_theta_0 = []
+        self.all_theta_1 = []
+
     @classmethod
     def forward(cls, theta_0: float, theta_1: float) -> Tuple[float, float]:
         """
