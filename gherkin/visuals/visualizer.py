@@ -1,9 +1,10 @@
-from typing import Tuple, Optional
+from typing import Tuple
 
 import pygame
 from numpy.lib import math
 
-from gherkin.model import World, Robot, Rotation
+from gherkin.common import Goal
+from gherkin.model import World, Robot
 
 
 class Visualizer:
@@ -20,25 +21,24 @@ class Visualizer:
         pygame.init()
         pygame.font.init()
         self.world = world
-        self.screen = pygame.display.set_mode((world.width, world.height + 100))
+        self.screen = pygame.display.set_mode((world.total_width, world.height + 100))
         pygame.display.set_caption('Gherkin Challenge')
         self.font = pygame.font.SysFont('freesansbolf.tff', 30)
 
-    def display_world(self) -> None:
+    def display_world(self, goal: Goal, offset: int) -> None:
         """
         Display the world
         """
-        goal = self.world.convert_to_display((self.world.goal.x, self.world.goal.y))
+        goal = self.world.convert_to_display((goal.x, goal.y), offset)
         pygame.draw.circle(self.screen, self.RED, goal, 6)
-
 
     def display_robot(self, robot: Robot) -> None:
         """
         Display the robot
         """
-        j0 = self.world.robot_origin
-        j1 = self.world.convert_to_display(robot.joint_1_pos())
-        j2 = self.world.convert_to_display(robot.joint_2_pos())
+        j0 = self.world.robot_origins[robot.offset]
+        j1 = self.world.convert_to_display(robot.arm.joint_1_pos(), robot.offset)
+        j2 = self.world.convert_to_display(robot.arm.joint_2_pos(), robot.offset)
         # Draw joint 0
         pygame.draw.circle(self.screen, self.BLACK, j0, 4)
         # Draw link 1
@@ -51,25 +51,25 @@ class Visualizer:
         pygame.draw.circle(self.screen, self.BLACK, j2, 4)
         self.draw_rotation_indicator(robot)
 
-    def draw_rotation_indicator(self, robot):
+    def draw_rotation_indicator(self, robot: Robot):
         """
         Draws a line to show the rotation of the robot arm as if from above, to indicate the it's planar angle
         """
         text = self.font.render('Rotating:', True, self.BLACK)
         self.screen.blit(text, (1, self.world.height + 50))
-        center = (130, self.world.height + 60)
-        line_length = 25
-        x1 = center[0] + math.cos(math.radians(robot.angle.inverse.angle)) * line_length
-        y1 = center[1] + math.sin(math.radians(robot.angle.inverse.angle)) * line_length
-        x2 = center[0] + math.cos(math.radians(robot.angle.angle)) * line_length
-        y2 = center[1] + math.sin(math.radians(robot.angle.angle)) * line_length
+        center = (self.world.robot_origins[robot.offset][0], self.world.height + 60)
+        line_length = 35
+        x1 = center[0] + math.cos(math.radians(robot.base.angle.inverse.angle)) * line_length
+        y1 = center[1] + math.sin(math.radians(robot.base.angle.inverse.angle)) * line_length
+        x2 = center[0] + math.cos(math.radians(robot.base.angle.angle)) * line_length
+        y2 = center[1] + math.sin(math.radians(robot.base.angle.angle)) * line_length
         cx = (x1 + x2) / 2
         cy = (y1 + y2) / 2
         pygame.draw.circle(self.screen, self.BLACK, (cx, cy), 4)
-        pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 3)
-        pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 3)
+        pygame.draw.line(self.screen, self.GREEN, (x1, y1), (cx, cy), 4)
+        pygame.draw.line(self.screen, self.RED, (cx, cy), (x2, y2), 4)
 
-    def update_display(self, robot: Robot, success: bool) -> bool:
+    def update_display(self, robot: Robot, goal: Goal, success: bool):
         for event in pygame.event.get():
             # Keypress
             if event.type == pygame.KEYDOWN:
@@ -80,19 +80,17 @@ class Visualizer:
             if event.type == pygame.QUIT:
                 return False
 
-        self.screen.fill(self.WHITE)
+        self.screen.fill(self.WHITE, (self.world.robot_width * robot.offset, 0, self.world.robot_width, self.screen.get_height()))
 
-        self.display_world()
+        self.display_world(goal, robot.offset)
 
         self.display_robot(robot)
 
         if success:
             text = self.font.render('Success!', True, self.BLACK)
-            self.screen.blit(text, (1, 1))
+            self.screen.blit(text, (self.world.robot_origins[robot.offset][0]-55, 1))
 
         pygame.display.flip()
-
-        return True
 
     def cleanup(self) -> None:
         pygame.quit()
