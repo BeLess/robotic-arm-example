@@ -61,13 +61,3 @@ $ python challenge.py
 * Change system from top down to on the wall - add gravity!
   * This will require changing Gherkin to use torque control
 * Replace the controller with a learned policy
-
-## Submission
-
-**Please submit your changes as a pull request to the repository.**
-
-In addition to your final solution, we'll be taking a look at the quality of your code and how you use version control. Please make your PR easy to review! We will also read your commit messages, briefly examine the history of the repository, etc.
-
-This exercise is "open-book", so take the time you need to craft a careful and correct solution. Please feel free to use whatever tools, techniques, or materials you care to. Incorporating code from elsewhere is fine, but please credit the author(s).
-
-If you have any questions about the exercise or would like further clarification on the requirements feel free to reach out!
